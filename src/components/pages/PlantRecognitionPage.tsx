@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { Upload, Camera, Loader2, Droplet, Sun, AlertTriangle, Leaf, Sparkles, CheckCircle, MessageCircle, X, Send, Paperclip } from 'lucide-react';
 import { translations, type Language } from '../../utils/translations';
-import telegramIcon from 'src/assets/0b2433cc304d24f11b1e266d5d34bf8456d729d3.png';
+import telegramIcon from 'src/assets/0b2433cc304d24f11b1e266d5d34bf8456d729d3.pn';
 
 interface PlantInfo {
   name: string;
