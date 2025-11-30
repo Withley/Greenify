@@ -105,3 +105,4 @@ This project was developed by a team of 4 participants during the Milli Hakaton.
 
 📄 License
 This project is open-source and can be freely used, studied, and modified.
+
