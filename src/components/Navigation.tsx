@@ -38,7 +38,7 @@ export function Navigation({ currentPage, onNavigate, isLoggedIn = false, onLogo
   ];
 
   return (
-    <nav className={`h-[64px] md:h-[72px] transition-all duration-300 backdrop-blur-sm ${isDarkMode ? 'bg-[#101415]/95 border-[#2F3B3C]' : 'bg-white/95 border-gray-200'} border-b sticky top-0 z-50 shadow-sm`}>
+    <nav className={`h-[64px] md:h-[72px] transition-all duration-300 ${isDarkMode ? 'bg-[#101415] border-[#2F3B3C]' : 'bg-white border-gray-200'} border-b sticky top-0 z-50 shadow-sm`}>
       <div className="max-w-[1440px] mx-auto px-3 sm:px-4 md:px-8 lg:px-12 xl:px-[120px] h-full flex items-center justify-between">
         {/* Logo */}
         <motion.button 

@@ -13,7 +13,7 @@ import { TasksPage } from './components/pages/TasksPage';
 import { GamesSelectionPage } from './components/pages/GamesSelectionPage';
 import { QuestionsPage } from './components/pages/EducationalGamesPage';
 import { InteractiveGamesPage } from './components/pages/InteractiveGamesPage';
-import { toast } from 'sonner@2.0.3';
+import { toast } from 'sonner';
 import { Toaster } from './components/ui/sonner';
 import { type Language } from './utils/translations';
 

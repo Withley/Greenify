@@ -50,7 +50,7 @@ export function LoginPage({ onLogin, onNavigate, isDarkMode, language }: LoginPa
     <div className={`min-h-[calc(100vh-64px)] md:min-h-[calc(100vh-72px)] flex items-center justify-center px-2 xs:px-4 sm480:px-6 sm576:px-8 py-6 xs:py-8 sm480:py-12 ${isDarkMode ? 'bg-[#101415]' : 'bg-white'}`}>
       <div className="w-full max-w-md px-2 xs:px-0">
         <motion.div 
-          className={`rounded-[16px] p-8 relative overflow-hidden ${isDarkMode ? 'bg-[#1A2324]' : 'bg-white border-2 border-gray-200'}`}
+          className={`rounded-[16px] p-4 xs:p-6 sm480:p-8 relative overflow-hidden ${isDarkMode ? 'bg-[#1A2324]' : 'bg-white border-2 border-gray-200'}`}
           style={{ boxShadow: isDarkMode ? '0 4px 24px rgba(0,0,0,0.35)' : '0 4px 24px rgba(0,0,0,0.1)' }}
           initial={{ opacity: 0, y: 30 }}
           animate={{ opacity: 1, y: 0 }}
@@ -87,7 +87,7 @@ export function LoginPage({ onLogin, onNavigate, isDarkMode, language }: LoginPa
                   type="email" 
                   value={email} 
                   onChange={(e) => setEmail(e.target.value)}
-                  className={`w-full ${isDarkMode ? 'bg-[#2F3B3C] text-[#E1E1E1]' : 'bg-gray-100 text-[#101415] border border-gray-300'} px-4 py-3 pl-12 rounded-[12px] outline-none focus:ring-2 focus:ring-[#00C57A] transition-all`}
+                  className={`w-full ${isDarkMode ? 'bg-[#2F3B3C] text-[#E1E1E1]' : 'bg-gray-100 text-[#101415] border border-gray-300'} px-4 py-3 pl-14 rounded-[12px] outline-none focus:ring-2 focus:ring-[#00C57A] transition-all`}
                   placeholder={t('email')}
                   required 
                 />
@@ -108,7 +108,7 @@ export function LoginPage({ onLogin, onNavigate, isDarkMode, language }: LoginPa
                   type="password" 
                   value={password} 
                   onChange={(e) => setPassword(e.target.value)}
-                  className={`w-full ${isDarkMode ? 'bg-[#2F3B3C] text-[#E1E1E1]' : 'bg-gray-100 text-[#101415] border border-gray-300'} px-4 py-3 pl-12 rounded-[12px] outline-none focus:ring-2 focus:ring-[#00C57A] transition-all`}
+                  className={`w-full ${isDarkMode ? 'bg-[#2F3B3C] text-[#E1E1E1]' : 'bg-gray-100 text-[#101415] border border-gray-300'} px-4 py-3 pl-14 rounded-[12px] outline-none focus:ring-2 focus:ring-[#00C57A] transition-all`}
                   placeholder={t('password')}
                   required 
                 />

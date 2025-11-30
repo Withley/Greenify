@@ -244,7 +244,7 @@ export function ContactPage({ isDarkMode, language }: ContactPageProps) {
               <AnimatePresence>
                 {submitted && (
                   <motion.div 
-                    className="bg-[#00C57A] bg-opacity-20 border border-[#00C57A] text-[#00C57A] px-4 py-3 rounded-[12px] caption text-center flex items-center justify-center gap-2"
+                    className="bg-[#000000] bg-opacity-20 border border-[#00C57A] text-[#00C57A] px-4 py-3 rounded-[12px] caption text-center flex items-center justify-center gap-2"
                     initial={{ opacity: 0, scale: 0.8, y: -10 }}
                     animate={{ opacity: 1, scale: 1, y: 0 }}
                     exit={{ opacity: 0, scale: 0.8, y: -10 }}

@@ -1,8 +1,23 @@
-import { useState } from 'react';
-import { motion, AnimatePresence } from 'motion/react';
-import { Upload, Camera, Loader2, Droplet, Sun, AlertTriangle, Leaf, Sparkles, CheckCircle, MessageCircle, X, Send, Paperclip } from 'lucide-react';
-import { translations, type Language } from '../../utils/translations';
-import telegramIcon from '../../assets/Telegram.png';
+import React, { useEffect, useState } from "react";
+import { motion, AnimatePresence } from "motion/react";
+import {
+  Upload,
+  Camera,
+  Loader2,
+  Droplet,
+  Sun,
+  AlertTriangle,
+  Leaf,
+  Sparkles,
+  CheckCircle,
+  MessageCircle,
+  X,
+  Send,
+  Paperclip
+} from "lucide-react";
+import { translations, type Language } from "../../utils/translations";
+import telegramIcon from "../../assets/Telegram.png";
+
 
 
 interface PlantInfo {
@@ -17,7 +32,7 @@ interface PlantInfo {
 
 interface ChatMessage {
   text: string;
-  sender: 'bot' | 'user';
+  sender: "bot" | "user";
   image?: string;
 }
 
@@ -26,79 +41,107 @@ interface PlantRecognitionPageProps {
   language: Language;
 }
 
-// Floating particle component
 const FloatingLeaf = ({ delay = 0 }: { delay?: number }) => {
   const randomX = Math.random() * 100;
   return (
     <motion.div
       className="absolute text-3xl will-change-transform"
-      initial={{ y: '100%', x: `${randomX}%`, opacity: 0 }}
-      animate={{
-        y: '-100%',
-        opacity: [0, 0.3, 0],
-        rotate: 360
-      }}
-      transition={{
-        duration: 12,
-        delay: delay,
-        repeat: Infinity,
-        ease: 'linear'
-      }}
+      initial={{ y: "100%", x: `${randomX}%`, opacity: 0 }}
+      animate={{ y: "-100%", opacity: [0, 0.3, 0], rotate: 360 }}
+      transition={{ duration: 12, delay: delay, repeat: Infinity, ease: "linear" }}
     >
       🍃
     </motion.div>
   );
 };
 
-// Chat responses data
 const getChatResponses = (language: Language) => {
-  if (language === 'en') {
+  if (language === "en") {
     return {
-      water: '💧 Plant water requirements vary by species:\n\n• Cacti: 1-2 times per month\n• Tropical plants: 2-3 times per week\n• Herbaceous plants: 1-2 times per week\n\nWater when soil is dry and check drainage.',
-      light: '☀️ Plant light requirements:\n\n• Bright light: cacti, succulents\n• Medium light: ficus, monstera\n• Low light: zamioculcas, pothos\n\nPlace your plant in the right spot and gradually acclimate it to new light.',
-      soil: '🌱 Soil and drainage:\n\n• Good drainage is essential\n• Each plant has its own soil mix\n• For succulents: sandy soil\n• For tropical plants: peat + perlite\n\nChange soil 1-2 times per year.',
-      fertilizer: '🌿 Fertilization tips:\n\n• Spring-summer: twice a month\n• Fall-winter: once a month or not at all\n• Liquid fertilizers are more effective\n• Always follow manufacturer instructions\n\nExcess fertilizer damages plants!',
-      disease: '🔍 Diseases and problems:\n\n• Yellow leaves: too much water or low light\n• Brown tips: low humidity\n• White spots: fungus or pests\n• Falling leaves: stress or adaptation\n\nIdentify and treat problems early.',
-      transplant: '🪴 Transplanting guidelines:\n\n• First sign: roots coming out of pot\n• Best time: spring\n• New pot should be 2-3 cm larger\n• Gently remove old soil\n• Water 1-2 days later\n\nPlant may be stressed during adaptation.',
-      propagation: '🌱 Plant propagation methods:\n\n• Cuttings: monstera, pothos\n• Leaf: succulents, zamioculcas\n• Seeds: herbs\n• Division: daisies, sansevierya\n\nRooting takes 2-4 weeks.',
-      beginner: '🌿 Plants for beginners:\n\n• Pothos: very hardy\n• Sansevierya: low maintenance\n• Zamioculcas: survives even when forgotten\n• Monstera: large and beautiful\n\nThese plants are ideal for newcomers!',
-      tips: '✨ Basic care tips:\n\n• Learn each plant individually\n• Check regularly\n• Avoid over-care\n• Be patient - growth takes time\n• Upload a photo to identify plants!\n\nAsk if you have questions! 🌱',
-      toxicity: '⚠️ Toxicity and safety:\n\n• Some plants are toxic to pets\n• Keep away from small children\n• Toxic plants: ficus, monstera, dieffenbachia\n• Safe: spider plant, parlor palm\n\nResearch before buying plants!',
-      humidity: '💦 Humidity management:\n\n• Tropical plants need high humidity (60-80%)\n• Use a spray bottle\n• Group plants together\n• Use a humidifier\n• Place water trays\n\nDry air causes leaf browning.',
-      temperature: '🌡️ Temperature requirements:\n\n• Most houseplants: 18-24°C\n• Tropical plants: 20-26°C\n• Cacti: 15-25°C\n• Keep away from cold drafts\n• Keep away from air conditioning\n\nTemperature changes cause stress.',
-      default: '🌿 Your question should be about plants. I can help you with:\n\n• Watering and care\n• Light and placement\n• Soil and fertilization\n• Diseases and problems\n• Transplanting and propagation\n• Plant identification (upload photo)\n\nAsk a more specific question! 🌱'
+      water:
+        "💧 Plant water requirements vary by species:\n\n• Cacti: 1-2 times per month\n• Tropical plants: 2-3 times per week\n• Herbaceous plants: 1-2 times per week\n\nWater when soil is dry and check drainage.",
+      light:
+        "☀️ Plant light requirements:\n\n• Bright light: cacti, succulents\n• Medium light: ficus, monstera\n• Low light: zamioculcas, pothos\n\nPlace your plant in the right spot and gradually acclimate it to new light.",
+      soil:
+        "🌱 Soil and drainage:\n\n• Good drainage is essential\n• Each plant has its own soil mix\n• For succulents: sandy soil\n• For tropical plants: peat + perlite\n\nChange soil 1-2 times per year.",
+      fertilizer:
+        "🌿 Fertilization tips:\n\n• Spring-summer: twice a month\n• Fall-winter: once a month or not at all\n• Liquid fertilizers are more effective\n• Always follow manufacturer instructions\n\nExcess fertilizer damages plants!",
+      disease:
+        "🔍 Diseases and problems:\n\n• Yellow leaves: too much water or low light\n• Brown tips: low humidity\n• White spots: fungus or pests\n• Falling leaves: stress or adaptation\n\nIdentify and treat problems early.",
+      transplant:
+        "🪴 Transplanting guidelines:\n\n• First sign: roots coming out of pot\n• Best time: spring\n• New pot should be 2-3 cm larger\n• Gently remove old soil\n• Water 1-2 days later\n\nPlant may be stressed during adaptation.",
+      propagation:
+        "🌱 Plant propagation methods:\n\n• Cuttings: monstera, pothos\n• Leaf: succulents, zamioculcas\n• Seeds: herbs\n• Division: daisies, sansevierya\n\nRooting takes 2-4 weeks.",
+      beginner:
+        "🌿 Plants for beginners:\n\n• Pothos: very hardy\n• Sansevierya: low maintenance\n• Zamioculcas: survives even when forgotten\n• Monstera: large and beautiful\n\nThese plants are ideal for newcomers!",
+      tips:
+        "✨ Basic care tips:\n\n• Learn each plant individually\n• Check regularly\n• Avoid over-care\n• Be patient - growth takes time\n• Upload a photo to identify plants!\n\nAsk if you have questions! 🌱",
+      toxicity:
+        "⚠️ Toxicity and safety:\n\n• Some plants are toxic to pets\n• Keep away from small children\n• Toxic plants: ficus, monstera, dieffenbachia\n• Safe: spider plant, parlor palm\n\nResearch before buying plants!",
+      humidity:
+        "💦 Humidity management:\n\n• Tropical plants need high humidity (60-80%)\n• Use a spray bottle\n• Group plants together\n• Use a humidifier\n• Place water trays\n\nDry air causes leaf browning.",
+      temperature:
+        "🌡️ Temperature requirements:\n\n• Most houseplants: 18-24°C\n• Tropical plants: 20-26°C\n• Cacti: 15-25°C\n• Keep away from cold drafts\n• Keep away from air conditioning\n\nTemperature changes cause stress.",
+      default:
+        "🌿 Your question should be about plants. I can help you with:\n\n• Watering and care\n• Light and placement\n• Soil and fertilization\n• Diseases and problems\n• Transplanting and propagation\n• Plant identification (upload photo)\n\nAsk a more specific question! 🌱"
     };
-  } else if (language === 'ru') {
+  } else if (language === "ru") {
     return {
-      water: '💧 Потребности растений в воде различаются в зависимости от вида:\n\n• Кактусы: 1-2 раза в месяц\n• Тропические растения: 2-3 раза в неделю\n• Травянистые растения: 1-2 раза в неделю\n\nПоливайте, когда почва сухая, и проверяйте дренаж.',
-      light: '☀️ Световые требования растений:\n\n• Яркий свет: кактусы, суккуленты\n• Средний свет: фикус, монстера\n• Низкая освещенность: замиокулькас, потос\n\nРазместите растение в правильном месте и постепенно приучите его к новому освещению.',
-      soil: '🌱 Почва и дренаж:\n\n• Хороший дренаж необходим\n• У каждого растения своя почвенная смесь\n• Для суккулентов: песчаная почва\n• Для тропических растений: торф + перлит\n\nМеняйте почву 1-2 раза в год.',
-      fertilizer: '🌿 Советы по удобрению:\n\n• Весна-лето: два раза в месяц\n• Осень-зима: один раз в месяц или вообще\n• Жидкие удобрения более эффективны\n• Всегда следуйте инструкциям производителя\n\nИзбыток удобрений вредит растениям!',
-      disease: '🔍 Болезни и проблемы:\n\n• Желтые листья: слишком много воды или мало света\n• Коричневые кончики: низкая влажность\n• Белые пятна: грибок или вредители\n• Опадающие листья: стресс или адаптация\n\nВыявляйте и лечите проблемы рано.',
-      transplant: '🪴 Правила пересадки:\n\n• Первый признак: корни выходят из горшка\n• Лучшее время: весна\n• Новый горшок должен быть на 2-3 см больше\n• Аккуратно удалите старую почву\n• Полейте через 1-2 дня\n\nРастение может испытывать стресс во время адаптации.',
-      propagation: '🌱 Методы размножения растений:\n\n• Черенки: монстера, потос\n• Лист: суккуленты, замиокулькас\n• Семена: травы\n• Деление: ромашки, сансевиерия\n\nУкоренение занимает 2-4 недели.',
-      beginner: '🌿 Растения для начинающих:\n\n• Потос: очень выносливый\n• Сансевиерия: низкий уход\n• Замиокулькас: выживает даже когда забыт\n• Монстера: большой и красивый\n\nЭти растения идеальны для новичков!',
-      tips: '✨ Основные советы по уходу:\n\n• Изучайте каждое растение индивидуально\n• Регулярно проверяйте\n• Избегайте чрезмерного ухода\n• Будьте терпеливы - рост требует времени\n• Загрузите фото для идентификации растений!\n\nЗадавайте вопросы, если есть! 🌱',
-      toxicity: '⚠️ Токсичность и безопасность:\n\n• Некоторые растения токсичны для домашних животных\n• Держите подальше от маленьких детей\n• Токсичные растения: фикус, монстера, диффенбахия\n• Безопасные: паучье растение, комнатная пальма\n\nИсследуйте перед покупкой растений!',
-      humidity: '💦 Управление влажностью:\n\n• Тропические растения нуждаются в высокой влажности (60-80%)\n• Используйте распылитель\n• Группируйте растения вместе\n• Используйте увлажнитель\n• Размещайте подносы с водой\n\nСухой воздух вызывает потемнение листьев.',
-      temperature: '🌡️ Температурные требования:\n\n• Большинство комнатных растений: 18-24°C\n• Тропические растения: 20-26°C\n• Кактусы: 15-25°C\n• Держите подальше от холодных сквозняков\n• Держите подальше от кондиционера\n\nИзменения температуры вызывают стресс.',
-      default: '🌿 Ваш вопрос должен быть о растениях. Я могу помочь вам с:\n\n• Полив и уход\n• Свет и размещение\n• Почва и удобрение\n• Болезни и проблемы\n• Пересадка и размножение\n• Идентификация растений (загрузить фото)\n\nЗадайте более конкретный вопрос! 🌱'
+      water:
+        "💧 Потребности растений в воде различаются в зависимости от вида:\n\n• Кактусы: 1-2 раза в месяц\n• Тропические растения: 2-3 раза в неделю\n• Травянистые растения: 1-2 раза в неделю\n\nПоливайте, когда почва сухая, и проверяйте дренаж.",
+      light:
+        "☀️ Световые требования растений:\n\n• Яркий свет: кактусы, суккуленты\n• Средний свет: фикус, монстера\n• Низкая освещенность: замиокулькас, потос\n\nРазместите растение в правильном месте и постепенно приучите его к новому освещению.",
+      soil:
+        "🌱 Почва и дренаж:\n\n• Хороший дренаж необходим\n• У каждого растения своя почвенная смесь\n• Для суккулентов: песчаная почва\n• Для тропических растений: торф + перлит\n\nМеняйте почву 1-2 раза в год.",
+      fertilizer:
+        "🌿 Советы по удобрению:\n\n• Весна-лето: два раза в месяц\n• Осень-зима: один раз в месяц или вообще\n• Жидкие удобрения более эффективны\n• Всегда следуйте инструкциям производителя\n\nИзбыток удобрений вредит растениям!",
+      disease:
+        "🔍 Болезни и проблемы:\n\n• Желтые листья: слишком много воды или мало света\n• Коричневые кончики: низкая влажность\n• Белые пятна: грибок или вредители\n• Опадающие листья: стресс или адаптация\n\nВыявляйте и лечите проблемы рано.",
+      transplant:
+        "🪴 Правила пересадки:\n\n• Первый признак: корни выходят из горшка\n• Лучшее время: весна\n• Новый горшок должен быть на 2-3 см больше\n• Аккуратно удалите старую почву\n• Полейте через 1-2 дня\n\nРастение может испытывать стресс во время адаптации.",
+      propagation:
+        "🌱 Методы размножения растений:\n\n• Черенки: монстера, потос\n• Лист: суккуленты, замиокулькас\n• Семена: травы\n• Деление: ромашки, сансевиерия\n\nУкоренение занимает 2-4 недели.",
+      beginner:
+        "🌿 Растения для начинающих:\n\n• Потос: очень выносливый\n• Сансевиерия: низкий уход\n• Замиокулькас: выживает даже когда забыт\n• Монстера: большой и красивый\n\nЭти растения идеальны для новичков!",
+      tips:
+        "✨ Основные советы по уходу:\n\n• Изучайте каждое растение индивидуально\n• Регулярно проверяйте\n• Избегайте чрезмерного ухода\n• Будьте терпеливы - рост требует времени\n• Загрузите фото для идентификации растений!\n\nЗадавайте вопросы, если есть! 🌱",
+      toxicity:
+        "⚠️ Токсичность и безопасность:\n\n• Некоторые растения токсичны для домашних животных\n• Держите подальше от маленьких детей\n• Токсичные растения: фикус, монстера, диффенбахия\n• Безопасные: паучье растение, комнатная пальма\n\nИсследуйте перед покупкой растений!",
+      humidity:
+        "💦 Управление влажностью:\n\n• Тропические растения нуждаются в высокой влажности (60-80%)\n• Используйте распылитель\n• Группируйте растения вместе\n• Используйте увлажнитель\n• Размещайте подносы с водой\n\nСухой воздух вызывает потемнение листьев.",
+      temperature:
+        "🌡️ Температурные требования:\n\n• Большинство комнатных растений: 18-24°C\n• Тропические растения: 20-26°C\n• Кактусы: 15-25°C\n• Держите подальше от холодных сквозняков\n• Держите подальше от кондиционера\n\nИзменения температуры вызывают стресс.",
+      default:
+        "🌿 Ваш вопрос должен быть о растениях. Я могу помочь вам с:\n\n• Полив и уход\n• Свет и размещение\n• Почва и удобрение\n• Болезни и проблемы\n• Пересадка и размножение\n• Идентификация растений (загрузить фото)\n\nЗадайте более конкретный вопрос! 🌱"
     };
   } else {
     return {
-      water: '💧 Bitkilərin su ehtiyacı növdən asılıdır:\n\n• Kaktuslar: ayda 1-2 dəfə\n• Tropik bitkilər: həftədə 2-3 dəfə\n• Otsu bitkilər: həftədə 1-2 dəfə\n\nTorpaq quruduqda sulayın və drenajı yoxlayın.',
-      light: '☀️ Bitkilərin işıq ehtiyacı:\n\n• Parlaq işıq: kaktuslar, sukulentlər\n• Orta işıq: ficus, monstera\n• Az işıq: zamioculcas, pothos\n\nBitkinizi düzgün yerə qoyun və onu tədricən yeni işığa adətləndirin.',
-      soil: '🌱 Torpaq və drenaj:\n\n• Yaxşı drenaj vacibdir\n• Hər bitkinin öz torpaq qarışığı var\n• Sukulentlər üçün: qumlu torpaq\n• Tropik bitkilər üçün: torf + perlit\n\nİldə 1-2 dəfə torpaq dəyişdirin.',
-      fertilizer: '🌿 Gübrələmə məsləhətləri:\n\n• Yaz-yay: ayda 2 dəfə\n• Payız-qış: ayda 1 dəfə və ya heç\n• Maye gübrələr daha effektivdir\n• Həmişə istehsalçının təlimatına əməl edin\n\nArtıq gübrə bitkiyə zərər verər!',
-      disease: '🔍 Xəstəlik və problemlər:\n\n• Sarı yarpaqlar: çox su və ya az işıq\n• Qəhvəyi uçlar: az rütubət\n• Ağ ləkələr: kif və ya zərərvericilər\n• Düşən yarpaqlar: stress və ya adaptasiya\n\nProblemi erkən müəyyənləşdirin və müalicə edin.',
-      transplant: '🪴 Köçürmə qaydaları:\n\n• İlk əlamət: kök qabdan çıxır\n• Ən yaxşı vaxt: yaz\n• Yeni qab 2-3 sm böyük olmalı\n• Köhnə torpağı yumşaq silin\n• 1-2 gün sonra sulayın\n\nBitki adaptasiya dövründə stresslənə bilər.',
-      propagation: '🌱 Bitki çoxaltma üsulları:\n\n• Kəsiklər: monstera, pothos\n• Yarpaq: sukulentlər, zamioculcas\n• Toxum: baharatlıq bitkilər\n• Bölmə: papatyalar, sansevierya\n\nKök atması üçün 2-4 həftə lazımdır.',
-      beginner: '🌿 Başlanğıc üçün bitkilər:\n\n• Pothos: çox davamlı\n• Sansevierya: az qulluq\n• Zamioculcas: unudulduqda belə yaşayır\n• Monstera: böyük və gözəl\n\nBu bitkilər yeni başlayanlar üçün idealdır!',
-      tips: '✨ Əsas qulluq məsləhətləri:\n\n• Hər bitkini fərdi olaraq öyrənin\n• Mütəmadi yoxlayın\n• Artıq qulluqdan çəkinin\n• Səbr edin - artım vaxt tələb edir\n• Şəkil yükləyərək bitkini tanıya bilərsiniz!\n\nSualınız varsa, soruşun! 🌱',
-      toxicity: '⚠️ Zəhərlilik və təhlükəsizlik:\n\n• Bəzi bitkilər ev heyvanları üçün zəhərlidir\n• Kiçik uşaqlardan uzaq saxlayın\n• Zəhərli bitkilər: ficus, monstera, dieffenbachia\n• Təhlükəsiz: spider plant, parlor palm\n\nBitki almazdan əvvəl araşdırın!',
-      humidity: '💦 Rütubət idarəetməsi:\n\n• Tropik bitkilər yüksək rütubət istəyir (60-80%)\n• Püskürtmə şüşəsi istifadə edin\n• Bitkiləri qrupda yerləşdirin\n• Rütubətləndirici istifadə edin\n• Su qabları qoyun\n\nQuru hava yarpaqların qəhvəyiləşməsinə səbəb olur.',
-      temperature: '🌡️ Temperatur tələbləri:\n\n• Əksər ev bitkiləri: 18-24°C\n• Tropik bitkilər: 20-26°C\n• Kaktuslar: 15-25°C\n• Soyuq cərəyandan uzaq saxlayın\n• Kondisionerdən uzaq yerləşdirin\n\nTemperatur dəyişiklikləri stres yaradır.',
-      default: '🌿 Sualınız bitkiçiliklə bağlı olmalıdır. Mən sizə aşağıdakı mövzularda kömək edə bilərəm:\n\n• Sulama və qulluq\n• İşıq və yerləşdirmə\n• Torpaq və gübrələmə\n• Xəstəlik və problemlər\n• Köçürmə və çoxaltma\n• Bitki tanıma (şəkil yükləyin)\n\nDaha spesifik sual verin! 🌱'
+      water:
+        "💧 Bitkilərin su ehtiyacı növdən asılıdır:\n\n• Kaktuslar: ayda 1-2 dəfə\n• Tropik bitkilər: həftədə 2-3 dəfə\n• Otsu bitkilər: həftədə 1-2 dəfə\n\nTorpaq quruduqda sulayın və drenajı yoxlayın.",
+      light:
+        "☀️ Bitkilərin işıq ehtiyacı:\n\n• Parlaq işıq: kaktuslar, sukulentlər\n• Orta işıq: ficus, monstera\n• Az işıq: zamioculcas, pothos\n\nBitkinizi düzgün yerə qoyun və onu tədricən yeni işığa adətləndirin.",
+      soil:
+        "🌱 Torpaq və drenaj:\n\n• Yaxşı drenaj vacibdir\n• Hər bitkinin öz torpaq qarışığı var\n• Sukulentlər üçün: qumlu torpaq\n• Tropik bitkilər üçün: torf + perlit\n\nİldə 1-2 dəfə torpaq dəyişdirin.",
+      fertilizer:
+        "🌿 Gübrələmə məsləhətləri:\n\n• Yaz-yay: ayda 2 dəfə\n• Payız-qış: ayda 1 dəfə və ya heç\n• Maye gübrələr daha effektivdir\n• Həmişə istehsalçının təlimatına əməl edin\n\nArtıq gübrə bitkiyə zərər verər!",
+      disease:
+        "🔍 Xəstəlik və problemlər:\n\n• Sarı yarpaqlar: çox su və ya az işıq\n• Qəhvəyi uçlar: az rütubət\n• Ağ ləkələr: kif və ya zərərvericilər\n• Düşən yarpaqlar: stress və ya adaptasiya\n\nProblemi erkən müəyyənləşdirin və müalicə edin.",
+      transplant:
+        "🪴 Köçürmə qaydaları:\n\n• İlk əlamət: kök qabdan çıxır\n• Ən yaxşı vaxt: yaz\n• Yeni qab 2-3 sm böyük olmalı\n• Köhnə torpağı yumşaq silin\n• 1-2 gün sonra sulayın\n\nBitki adaptasiya dövründə stresslənə bilər.",
+      propagation:
+        "🌱 Bitki çoxaltma üsulları:\n\n• Kəsiklər: monstera, pothos\n• Yarpaq: sukulentlər, zamioculcas\n• Toxum: baharatlıq bitkilər\n• Bölmə: papatyalar, sansevierya\n\nKök atması üçün 2-4 həftə lazımdır.",
+      beginner:
+        "🌿 Başlanğıc üçün bitkilər:\n\n• Pothos: çox davamlı\n• Sansevierya: az qulluq\n• Zamioculcas: unudulduqda belə yaşayır\n• Monstera: böyük və gözəl\n\nBu bitkilər yeni başlayanlar üçün idealdır!",
+      tips:
+        "✨ Əsas qulluq məsləhətləri:\n\n• Hər bitkini fərdi olaraq öyrənin\n• Mütəmadi yoxlayın\n• Artıq qulluqdan çəkinin\n• Səbr edin - artım vaxt tələb edir\n• Şəkil yükləyərək bitkini tanıya bilərsiniz!\n\nSualınız varsa, soruşun! 🌱",
+      toxicity:
+        "⚠️ Zəhərlilik və təhlükəsizlik:\n\n• Bəzi bitkilər ev heyvanları üçün zəhərlidir\n• Kiçik uşaqlardan uzaq saxlayın\n• Zəhərli bitkilər: ficus, monstera, dieffenbachia\n• Təhlükəsiz: paçıq bitkisi, otaq palma\n\nBitki almazdan əvvəl araşdırın!",
+      humidity:
+        "💦 Rütubət idarəetməsi:\n\n• Tropik bitkilər yüksək rütubət istəyir (60-80%)\n• Püskürtmə şüşəsi istifadə edin\n• Bitkiləri qrupda yerləşdirin\n• Rütubətləndirici istifadə edin\n• Su qabları qoyun\n\nQuru hava yarpaqların qəhvəyiləşməsinə səbəb olur.",
+      temperature:
+        "🌡️ Temperatur tələbləri:\n\n• Əksər ev bitkiləri: 18-24°C\n• Tropik bitkilər: 20-26°C\n• Kaktuslar: 15-25°C\n• Soyuq cərəyandan uzaq saxlayın\n• Kondisionerdən uzaq yerləşdirin\n\nTemperatur dəyişiklikləri stres yaradır.",
+      default:
+        "🌿 Sualınız bitkiçiliklə bağlı olmalıdır. Mən sizə aşağıdakı mövzularda kömək edə bilərəm:\n\n• Sulama və qulluq\n• İşıq və yerləşdirmə\n• Torpaq və gübrələmə\n• Xəstəlik və problemlər\n• Köçürmə və çoxaltma\n• Bitki tanıma (şəkil yükləyin)\n\nDaha spesifik sual verin! 🌱"
     };
   }
 };
@@ -106,102 +149,311 @@ const getChatResponses = (language: Language) => {
 export function PlantRecognitionPage({ isDarkMode, language }: PlantRecognitionPageProps) {
   const t = translations[language];
   const chatResponses = getChatResponses(language);
+
+  
   const [isUploading, setIsUploading] = useState(false);
   const [plantInfo, setPlantInfo] = useState<PlantInfo | null>(null);
   const [uploadedImage, setUploadedImage] = useState<string | null>(null);
   const [isChatOpen, setIsChatOpen] = useState(false);
-  const [chatMessages, setChatMessages] = useState<ChatMessage[]>([
-    { text: t.chatWelcomeMessage, sender: 'bot' }
-  ]);
+  const [chatMessages, setChatMessages] = useState<ChatMessage[]>([{ text: t.chatWelcomeMessage, sender: 'bot' }]);
   const [userInput, setUserInput] = useState('');
-  const [error, setError] = useState<string | null>(null);
+  const [modelLoaded, setModelLoaded] = useState(false);
+  const [tmModel, setTmModel] = useState<any>(null);
 
-  // Mock plant data generator
-  const generateMockPlantData = (language: Language): PlantInfo => {
-    const mockPlants = {
-      en: [
-        { name: 'Monstera Deliciosa', family: 'Araceae', waterNeeds: 'Medium - 1-2 times per week', sunlight: 'Bright, indirect light', toxicity: 'Toxic to pets', ecologicalBenefits: 'Cleans the air, absorbs CO2 and produces oxygen. Has a positive impact on nature.', similarPlants: ['Philodendron', 'Pothos', 'Swiss Cheese Plant'] },
-        { name: 'Snake Plant', family: 'Asparagaceae', waterNeeds: 'Low - once every 2-3 weeks', sunlight: 'Low to bright indirect light', toxicity: 'Mildly toxic to pets', ecologicalBenefits: 'Excellent air purifier, produces oxygen at night. Very low maintenance.', similarPlants: ['ZZ Plant', 'Aloe Vera', 'Spider Plant'] },
-        { name: 'Pothos', family: 'Araceae', waterNeeds: 'Medium - 1-2 times per week', sunlight: 'Bright, indirect light', toxicity: 'Toxic to pets', ecologicalBenefits: 'Cleans the air, removes formaldehyde. Easy to care for.', similarPlants: ['Philodendron', 'Monstera', 'Heartleaf'] }
-      ],
-      ru: [
-        { name: 'Монстера деликатесная', family: 'Ароидные', waterNeeds: 'Средний - 1-2 раза в неделю', sunlight: 'Яркий, рассеянный свет', toxicity: 'Токсично для домашних животных', ecologicalBenefits: 'Очищает воздух, поглощает CO2 и производит кислород. Оказывает положительное влияние на природу.', similarPlants: ['Филодендрон', 'Потос', 'Швейцарский сырный завод'] },
-        { name: 'Сансевиерия', family: 'Спаржевые', waterNeeds: 'Низкий - раз в 2-3 недели', sunlight: 'Низкое или яркое рассеянное освещение', toxicity: 'Слабо токсично для домашних животных', ecologicalBenefits: 'Отличный очиститель воздуха, производит кислород ночью. Очень неприхотлив.', similarPlants: ['Замиокулькас', 'Алоэ Вера', 'Хлорофитум'] },
-        { name: 'Потос', family: 'Ароидные', waterNeeds: 'Средний - 1-2 раза в неделю', sunlight: 'Яркий, рассеянный свет', toxicity: 'Токсично для домашних животных', ecologicalBenefits: 'Очищает воздух, удаляет формальдегид. Легко ухаживать.', similarPlants: ['Филодендрон', 'Монстера', 'Сердцелистный'] }
-      ],
-      az: [
-        { name: 'Monstera Deliciosa', family: 'Araceae', waterNeeds: 'Orta - həftədə 1-2 dəfə', sunlight: 'Parlaq, dolayı işıq', toxicity: 'Ev heyvanları üçün zəhərlidir', ecologicalBenefits: 'Havanı təmizləyir, CO2 udur və oksigen istehsal edir. Təbiətə müsbət təsir göstərir.', similarPlants: ['Philodendron', 'Pothos', 'İsveçrə Pendiri'] },
-        { name: 'İlan Bitkisi', family: 'Asparagaceae', waterNeeds: 'Aşağı - hər 2-3 həftədə bir', sunlight: 'Aşağıdan parlaq dolayı işığa', toxicity: 'Ev heyvanları üçün yüngül zəhərlidir', ecologicalBenefits: 'Əla hava təmizləyicisi, gecə oksigen istehsal edir. Çox az qulluq tələb edir.', similarPlants: ['ZZ Bitkisi', 'Aloe Vera', 'Hörümçək Bitkisi'] },
-        { name: 'Pothos', family: 'Araceae', waterNeeds: 'Orta - həftədə 1-2 dəfə', sunlight: 'Parlaq, dolayı işıq', toxicity: 'Ev heyvanları üçün zəhərlidir', ecologicalBenefits: 'Havanı təmizləyir, formaldehid aradan qaldırır. Qulluq etmək asandır.', similarPlants: ['Philodendron', 'Monstera', 'Ürək Yarpağı'] }
-      ]
-    };
+  
+  const MODEL_JSON = '/model/model.json';
+  const METADATA_JSON = '/model/metadata.json';
 
-    const plants = mockPlants[language];
-    const randomPlant = plants[Math.floor(Math.random() * plants.length)];
-    return randomPlant;
+  const plantDatabase: Record<string, PlantInfo> = {
+    "Ficus Elastica": {
+      name:
+        language === "en"
+          ? "Ficus Elastica (Rubber Plant)"
+          : language === "ru"
+          ? "Ficus Elastica (Каучуковое дерево)"
+          : "Ficus Elastica (Kauçuk Ağacı)",
+      family: "Moraceae",
+      waterNeeds:
+        language === "en"
+          ? "Medium — water 1-2 times per week"
+          : language === "ru"
+          ? "Средний — поливать 1–2 раза в неделю"
+          : "Orta — həftədə 1-2 dəfə sulayın",
+      sunlight:
+        language === "en"
+          ? "Bright, indirect sunlight"
+          : language === "ru"
+          ? "Яркий рассеянный свет"
+          : "Parlaq, dolayı günəş işığı",
+      toxicity:
+        language === "en"
+          ? "Toxic to pets"
+          : language === "ru"
+          ? "Токсично для домашних животных"
+          : "Ev heyvanları üçün zəhərlidir",
+      ecologicalBenefits:
+        language === "en"
+          ? "Excellent at removing toxins from the air."
+          : language === "ru"
+          ? "Отлично очищает воздух от токсинов."
+          : "Havanı toksinlərdən təmizləməkdə çox yaxşıdır.",
+      similarPlants: ["Ficus Lyrata", "Ficus Benjamina", "Monstera Deliciosa"],
+    },
+
+    "Aloe Vera": {
+  name:
+    language === "en"
+      ? "Aloe Vera"
+      : language === "ru"
+      ? "Алоэ Вера"
+      : "Aloe Vera",
+
+  family: "Asphodelaceae",
+
+  waterNeeds:
+    language === "en"
+      ? "Low — water once every 2–3 weeks"
+      : language === "ru"
+      ? "Низкая — поливать раз в 2–3 недели"
+      : "Aşağı — 2–3 həftədə bir sulayın",
+
+  sunlight:
+    language === "en"
+      ? "Bright light — tolerates some direct sun"
+      : language === "ru"
+      ? "Яркий свет — переносит немного прямого солнца"
+      : "Parlaq işıq — bir az birbaşa günəşi dözür",
+
+  toxicity:
+    language === "en"
+      ? "Toxic to pets if eaten"
+      : language === "ru"
+      ? "Токсично для животных при поедании"
+      : "Ev heyvanları üçün yeyildikdə zəhərlidir",
+
+  ecologicalBenefits:
+    language === "en"
+      ? "Improves indoor air quality and stores water efficiently."
+      : language === "ru"
+      ? "Улучшает качество воздуха и эффективно сохраняет воду."
+      : "Havanı təmizləyir, suyu effektiv şəkildə saxlayır.",
+
+  similarPlants: ["Agave", "Haworthia", "Snake Plant"]
+},
+
+"Alma": {
+  name:
+    language === "en"
+      ? "Apple (Malus domestica)"
+      : language === "ru"
+      ? "Яблоня (Malus domestica)"
+      : "Alma Ağacı (Malus domestica)",
+
+  family: "Rosaceae",
+
+  waterNeeds:
+    language === "en"
+      ? "Medium — water deeply once per week during growth season."
+      : language === "ru"
+      ? "Средний — поливать раз в неделю обильно, особенно в период роста."
+      : "Orta — böyümə mövsümündə həftədə 1 dəfə bol sulayın.",
+
+  sunlight:
+    language === "en"
+      ? "Full sun — needs 6–8 hours of direct sunlight."
+      : language === "ru"
+      ? "Полное солнце — нужно 6–8 часов прямого света."
+      : "Tam günəş — gündə 6–8 saat birbaşa günəş işığına ehtiyacı var.",
+
+  toxicity:
+    language === "en"
+      ? "Non-toxic, but apple seeds contain small amounts of cyanide (harmless unless eaten in huge amounts)."
+      : language === "ru"
+      ? "Нетоксично, но семена содержат следы цианида (опасно только в очень больших количествах)."
+      : "Zəhərli deyil, amma toxumlarda az miqdarda sianid olur (çox miqdarda yeyilməsə təhlükəli deyil).",
+
+  ecologicalBenefits:
+    language === "en"
+      ? "Supports pollinators such as bees, improves biodiversity, produces edible fruit."
+      : language === "ru"
+      ? "Поддерживает опылителей, улучшает биоразнообразие, даёт съедобные плоды."
+      : "Arılar üçün faydalıdır, biomüxtəlifliyi artırır, yeyilə bilən meyvə verir.",
+
+  similarPlants: ["Pear Tree", "Quince", "Plum Tree"]
+},
+
+
+    "Günebaxan": {
+      name:
+        language === "en"
+          ? "Sunflower (Helianthus annuus)"
+          : language === "ru"
+          ? "Подсолнечник (Helianthus annuus)"
+          : "Günebaxan (Helianthus annuus)",
+
+      family: "Asteraceae",
+
+      waterNeeds:
+        language === "en"
+          ? "Medium — water when soil begins to dry"
+          : language === "ru"
+          ? "Средний — поливать, когда почва подсыхает"
+          : "Orta — torpaq qurumağa başlayanda sulayın",
+
+      sunlight:
+        language === "en"
+          ? "Full sun — needs at least 6 hours of direct light"
+          : language === "ru"
+          ? "Полное солнце — не менее 6 часов прямого света"
+          : "Tam günəş — ən azı 6 saat birbaşa günəş işığı",
+
+      toxicity:
+        language === "en"
+          ? "Non-toxic"
+          : language === "ru"
+          ? "Нетоксично"
+          : "Zəhərli deyil",
+
+      ecologicalBenefits:
+        language === "en"
+          ? "Supports bees and increases biodiversity."
+          : language === "ru"
+          ? "Поддерживает пчёл и улучшает биоразнообразие."
+          : "Arılar üçün çox faydalıdır və biomüxtəlifliyi artırır.",
+
+      similarPlants: ["Helianthus petiolaris", "Daisy", "Chrysanthemum"],
+    }
   };
 
-  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>, fromChat: boolean = false) => {
-    const file = e.target.files?.[0];
-    if (file) {
-      setIsUploading(true);
-      setError(null);
-      
-      // Create preview
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        const imageData = reader.result as string;
-        setUploadedImage(imageData);
-        
-        if (fromChat) {
-          setChatMessages(prev => [...prev, { text: '', sender: 'user', image: imageData }]);
-        }
-      };
-      reader.readAsDataURL(file);
+  useEffect(() => {
+    let mounted = true;
+    async function loadTM() {
+      try {
+        const tm = await import('@teachablemachine/image');
+        const model = await (tm as any).load(MODEL_JSON, METADATA_JSON);
+        if (!mounted) return;
+        setTmModel(model);
+        setModelLoaded(true);
+        console.log('Teachable Machine model loaded');
+      } catch (err) {
+        console.error('Failed to load TM model:', err);
+      }
+    }
+    loadTM();
+    return () => { mounted = false; };
+  }, []);
 
-      // Simulate API delay
-      setTimeout(() => {
+  const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>, fromChat: boolean = false) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    setIsUploading(true);
+
+    const reader = new FileReader();
+    reader.onloadend = async () => {
+      const imageData = reader.result as string;
+      setUploadedImage(imageData);
+
+      if (fromChat) {
+        setChatMessages(prev => [...prev, { text: '', sender: 'user', image: imageData }]);
+      }
+
+      
+      if (!modelLoaded || !tmModel) {
+        console.warn('Teachable Machine model not loaded yet. Please wait a moment and try again.');
+        setIsUploading(false);
+        return;
+      }
+
+      
+      const img = new Image();
+      img.src = imageData;
+
+      img.onload = async () => {
         try {
-          const plantData = generateMockPlantData(language);
-          setPlantInfo(plantData);
+          const predictions = await tmModel.predict(img);
+          if (!Array.isArray(predictions) || predictions.length === 0) {
+            console.warn('No predictions returned from model');
+            setIsUploading(false);
+            return;
+          }
+
           
+          const best = predictions.reduce((max: any, p: any) => (p.probability > max.probability ? p : max), predictions[0]);
+          // --- Confidence Threshold (bitki tanınmayıbsa) ---
+if (best.probability < 0.99) {
+  const notFoundMessage =
+    language === 'en'
+      ? "❌ I couldn't recognize this plant. Please upload a clearer plant image."
+      : language === 'ru'
+      ? "❌ Я не смог распознать это растение. Пожалуйста, загрузите более чёткое фото."
+      : "❌ Bu bitkini tanıya bilmədim. Zəhmət olmasa daha aydın bitki şəkli yükləyin.";
+
+  setPlantInfo({
+    name: notFoundMessage,
+    family: '—',
+    waterNeeds: '—',
+    sunlight: '—',
+    toxicity: '—',
+    ecologicalBenefits: '—',
+    similarPlants: []
+  });
+
+  if (fromChat) {
+    setChatMessages(prev => [...prev, { text: notFoundMessage, sender: 'bot' }]);
+  }
+
+  setIsUploading(false);
+  return; // ÇOX VACİB — aşağıdakı normal tanıma kodu işləməsin
+}
+
+          
+          console.log('TM → className:', best.className);
+          console.log('Probability:', best.probability);
+
+         
+          const info = plantDatabase[best.className] || {
+            name: best.className,
+            family: "—",
+            waterNeeds: "—",
+            sunlight: "—",
+            toxicity: "—",
+            ecologicalBenefits: "—",
+            similarPlants: []
+          };
+
+          setPlantInfo(info);
+
           if (fromChat) {
-            const chatResponse = language === 'en' 
-              ? `✅ Plant identified!\n\n🌿 Name: ${plantData.name}\n🧬 Family: ${plantData.family}\n💧 Water: ${plantData.waterNeeds}\n☀️ Light: ${plantData.sunlight}\n\nDetailed information is shown on the page!`
-              : language === 'ru'
-              ? `✅ Растение идентифицировано!\n\n🌿 Название: ${plantData.name}\n🧬 Семейство: ${plantData.family}\n💧 Вода: ${plantData.waterNeeds}\n☀️ Свет: ${plantData.sunlight}\n\nПодробная информация показана на странице!`
-              : `✅ Bitkini tanıdım!\n\n🌿 Ad: ${plantData.name}\n🧬 Ailə: ${plantData.family}\n💧 Su: ${plantData.waterNeeds}\n☀️ İşıq: ${plantData.sunlight}\n\nƏtraflı məlumat səhifədə göstərilir!`;
-            
+            const chatResponse =
+              language === 'en'
+                ? `✅ Plant identified!\n\n🌿 Name: ${info.name}\n🧬 Family: ${info.family}\n💧 Water: ${info.waterNeeds}\n☀️ Light: ${info.sunlight}\n⚠️ ${info.toxicity}`
+                : language === 'ru'
+                ? `✅ Растение идентифицировано!\n\n🌿 Название: ${info.name}\n🧬 Семейство: ${info.family}\n💧 Вода: ${info.waterNeeds}\n☀️ Свет: ${info.sunlight}\n⚠️ ${info.toxicity}`
+                : `✅ Bitkini tanıdım!\n\n🌿 Ad: ${info.name}\n🧬 Ailə: ${info.family}\n💧 Su: ${info.waterNeeds}\n☀️ İşıq: ${info.sunlight}\n⚠️ ${info.toxicity}`;
+
             setChatMessages(prev => [...prev, { text: chatResponse, sender: 'bot' }]);
           }
         } catch (err) {
-          const errorMessage = language === 'en'
-            ? 'Failed to identify plant. Please try again with a clearer image.'
-            : language === 'ru'
-            ? 'Не удалось определить растение. Попробуйте еще раз с более четким изображением.'
-            : 'Bitki tanıma uğursuz oldu. Xahiş edirik daha aydın bir şəkil ilə yenidən cəhd edin.';
-          
-          setError(errorMessage);
-          
-          if (fromChat) {
-            setChatMessages(prev => [...prev, { 
-              text: errorMessage, 
-              sender: 'bot' 
-            }]);
-          }
+          console.error('Prediction error:', err);
         } finally {
           setIsUploading(false);
         }
-      }, 1500); // Simulate API delay
-    }
+      };
+
+      img.onerror = () => {
+        console.error('Image failed to load for prediction');
+        setIsUploading(false);
+      };
+    };
+
+    reader.readAsDataURL(file);
   };
 
   const handleReset = () => {
     setPlantInfo(null);
     setUploadedImage(null);
-    setChatMessages([
-      { text: t.chatWelcomeMessage, sender: 'bot' }
-    ]);
+    setChatMessages([{ text: t.chatWelcomeMessage, sender: 'bot' }]);
   };
 
   const handleChatFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -210,88 +462,152 @@ export function PlantRecognitionPage({ isDarkMode, language }: PlantRecognitionP
 
   const getBotResponse = (userMessage: string): string => {
     const lowerMessage = userMessage.toLowerCase();
-    
-    if (lowerMessage.includes('su') || lowerMessage.includes('sulama') || lowerMessage.includes('nə qədər') ||
-        lowerMessage.includes('water') || lowerMessage.includes('watering') ||
-        lowerMessage.includes('вод') || lowerMessage.includes('полив')) {
+    if (
+      lowerMessage.includes('su') ||
+      lowerMessage.includes('sulama') ||
+      lowerMessage.includes('nə qədər') ||
+      lowerMessage.includes('water') ||
+      lowerMessage.includes('watering') ||
+      lowerMessage.includes('вод') ||
+      lowerMessage.includes('полив')
+    ) {
       return chatResponses.water;
     }
-    
-    if (lowerMessage.includes('işıq') || lowerMessage.includes('günəş') || lowerMessage.includes('kölgə') ||
-        lowerMessage.includes('light') || lowerMessage.includes('sun') || lowerMessage.includes('shade') ||
-        lowerMessage.includes('свет') || lowerMessage.includes('солн') || lowerMessage.includes('тень')) {
+    if (
+      lowerMessage.includes('işıq') ||
+      lowerMessage.includes('günəş') ||
+      lowerMessage.includes('kölgə') ||
+      lowerMessage.includes('light') ||
+      lowerMessage.includes('sun') ||
+      lowerMessage.includes('shade') ||
+      lowerMessage.includes('свет') ||
+      lowerMessage.includes('солн') ||
+      lowerMessage.includes('тень')
+    ) {
       return chatResponses.light;
     }
-    
-    if (lowerMessage.includes('torpaq') || lowerMessage.includes('substrat') || lowerMessage.includes('drenaj') ||
-        lowerMessage.includes('soil') || lowerMessage.includes('substrate') || lowerMessage.includes('drainage') ||
-        lowerMessage.includes('почв') || lowerMessage.includes('субстрат') || lowerMessage.includes('дренаж')) {
+    if (
+      lowerMessage.includes('torpaq') ||
+      lowerMessage.includes('substrat') ||
+      lowerMessage.includes('drenaj') ||
+      lowerMessage.includes('soil') ||
+      lowerMessage.includes('substrate') ||
+      lowerMessage.includes('drainage') ||
+      lowerMessage.includes('почв') ||
+      lowerMessage.includes('субстрат') ||
+      lowerMessage.includes('дренаж')
+    ) {
       return chatResponses.soil;
     }
-    
-    if (lowerMessage.includes('gübrə') || lowerMessage.includes('qidalandır') || lowerMessage.includes('yem') ||
-        lowerMessage.includes('fertiliz') || lowerMessage.includes('feed') ||
-        lowerMessage.includes('удобр') || lowerMessage.includes('подкорм')) {
+    if (
+      lowerMessage.includes('gübrə') ||
+      lowerMessage.includes('qidalandır') ||
+      lowerMessage.includes('yem') ||
+      lowerMessage.includes('fertiliz') ||
+      lowerMessage.includes('feed') ||
+      lowerMessage.includes('удобр') ||
+      lowerMessage.includes('подкорм')
+    ) {
       return chatResponses.fertilizer;
     }
-    
-    if (lowerMessage.includes('xəstə') || lowerMessage.includes('sarı') || lowerMessage.includes('zərərverici') || lowerMessage.includes('bit') ||
-        lowerMessage.includes('disease') || lowerMessage.includes('yellow') || lowerMessage.includes('pest') || lowerMessage.includes('bug') ||
-        lowerMessage.includes('болезн') || lowerMessage.includes('желт') || lowerMessage.includes('вредит')) {
+    if (
+      lowerMessage.includes('xəstə') ||
+      lowerMessage.includes('sarı') ||
+      lowerMessage.includes('zərərverici') ||
+      lowerMessage.includes('bit') ||
+      lowerMessage.includes('disease') ||
+      lowerMessage.includes('yellow') ||
+      lowerMessage.includes('pest') ||
+      lowerMessage.includes('bug') ||
+      lowerMessage.includes('болезн') ||
+      lowerMessage.includes('желт') ||
+      lowerMessage.includes('вредит')
+    ) {
       return chatResponses.disease;
     }
-    
     if (lowerMessage.includes('köçür') || lowerMessage.includes('transplant') || lowerMessage.includes('пересад')) {
       return chatResponses.transplant;
     }
-    
-    if (lowerMessage.includes('çoxalt') || lowerMessage.includes('kəsik') || lowerMessage.includes('toxum') ||
-        lowerMessage.includes('propagat') || lowerMessage.includes('cutting') || lowerMessage.includes('seed') ||
-        lowerMessage.includes('размнож') || lowerMessage.includes('черенк') || lowerMessage.includes('семен')) {
+    if (
+      lowerMessage.includes('çoxalt') ||
+      lowerMessage.includes('kəsik') ||
+      lowerMessage.includes('toxum') ||
+      lowerMessage.includes('propagat') ||
+      lowerMessage.includes('cutting') ||
+      lowerMessage.includes('seed') ||
+      lowerMessage.includes('размнож') ||
+      lowerMessage.includes('черенк') ||
+      lowerMessage.includes('семен')
+    ) {
       return chatResponses.propagation;
     }
-    
-    if (lowerMessage.includes('başlanğıc') || lowerMessage.includes('yeni') || lowerMessage.includes('sadə') ||
-        lowerMessage.includes('beginner') || lowerMessage.includes('new') || lowerMessage.includes('easy') ||
-        lowerMessage.includes('начин') || lowerMessage.includes('нов') || lowerMessage.includes('прост')) {
+    if (
+      lowerMessage.includes('başlanğıc') ||
+      lowerMessage.includes('yeni') ||
+      lowerMessage.includes('sadə') ||
+      lowerMessage.includes('beginner') ||
+      lowerMessage.includes('new') ||
+      lowerMessage.includes('easy') ||
+      lowerMessage.includes('начин') ||
+      lowerMessage.includes('нов') ||
+      lowerMessage.includes('прост')
+    ) {
       return chatResponses.beginner;
     }
-    
-    if (lowerMessage.includes('məsləhət') || lowerMessage.includes('yardım') || lowerMessage.includes('necə') ||
-        lowerMessage.includes('tip') || lowerMessage.includes('help') || lowerMessage.includes('how') ||
-        lowerMessage.includes('совет') || lowerMessage.includes('помощ') || lowerMessage.includes('как')) {
+    if (
+      lowerMessage.includes('məsləhət') ||
+      lowerMessage.includes('yardım') ||
+      lowerMessage.includes('necə') ||
+      lowerMessage.includes('tip') ||
+      lowerMessage.includes('help') ||
+      lowerMessage.includes('how') ||
+      lowerMessage.includes('совет') ||
+      lowerMessage.includes('помощ') ||
+      lowerMessage.includes('как')
+    ) {
       return chatResponses.tips;
     }
-    
-    if (lowerMessage.includes('zəhər') || lowerMessage.includes('təhlükə') || lowerMessage.includes('heyvan') || lowerMessage.includes('uşaq') ||
-        lowerMessage.includes('toxic') || lowerMessage.includes('poison') || lowerMessage.includes('pet') || lowerMessage.includes('child') ||
-        lowerMessage.includes('токсич') || lowerMessage.includes('яд') || lowerMessage.includes('животн') || lowerMessage.includes('ребен')) {
+    if (
+      lowerMessage.includes('zəhər') ||
+      lowerMessage.includes('təhlükə') ||
+      lowerMessage.includes('heyvan') ||
+      lowerMessage.includes('uşaq') ||
+      lowerMessage.includes('toxic') ||
+      lowerMessage.includes('poison') ||
+      lowerMessage.includes('pet') ||
+      lowerMessage.includes('child') ||
+      lowerMessage.includes('токсич') ||
+      lowerMessage.includes('яд') ||
+      lowerMessage.includes('животн') ||
+      lowerMessage.includes('ребен')
+    ) {
       return chatResponses.toxicity;
     }
-    
-    if (lowerMessage.includes('rütubət') || lowerMessage.includes('quru') || lowerMessage.includes('nəm') ||
-        lowerMessage.includes('humidity') || lowerMessage.includes('moist') ||
-        lowerMessage.includes('влажн') || lowerMessage.includes('сух')) {
+    if (lowerMessage.includes('rütubət') || lowerMessage.includes('quru') || lowerMessage.includes('nəm') || lowerMessage.includes('humidity') || lowerMessage.includes('moist')) {
       return chatResponses.humidity;
     }
-    
-    if (lowerMessage.includes('temperatur') || lowerMessage.includes('isti') || lowerMessage.includes('soyuq') ||
-        lowerMessage.includes('temperature') || lowerMessage.includes('hot') || lowerMessage.includes('cold') ||
-        lowerMessage.includes('температур') || lowerMessage.includes('тепл') || lowerMessage.includes('холод')) {
+    if (
+      lowerMessage.includes('temperatur') ||
+      lowerMessage.includes('isti') ||
+      lowerMessage.includes('soyuq') ||
+      lowerMessage.includes('temperature') ||
+      lowerMessage.includes('hot') ||
+      lowerMessage.includes('cold') ||
+      lowerMessage.includes('температур') ||
+      lowerMessage.includes('тепл') ||
+      lowerMessage.includes('холод')
+    ) {
       return chatResponses.temperature;
     }
-    
     return chatResponses.default;
   };
 
   const handleSendMessage = () => {
     if (!userInput.trim()) return;
-    
     const userMessage = userInput.trim();
     setChatMessages(prev => [...prev, { text: userMessage, sender: 'user' }]);
-    setUserInput('');
-    
-    // Simulate bot thinking
+    setUserInput("");
+
     setTimeout(() => {
       const botResponse = getBotResponse(userMessage);
       setChatMessages(prev => [...prev, { text: botResponse, sender: 'bot' }]);
@@ -299,13 +615,11 @@ export function PlantRecognitionPage({ isDarkMode, language }: PlantRecognitionP
   };
 
   const handleKeyPress = (e: React.KeyboardEvent<HTMLInputElement>) => {
-    if (e.key === 'Enter') {
-      handleSendMessage();
-    }
+    if (e.key === "Enter") handleSendMessage();
   };
 
   return (
-    <div className={`min-h-[calc(100vh-64px)] md:min-h-[calc(100vh-72px)] py-4 xs:py-6 sm480:py-8 md:py-12 relative overflow-hidden ${isDarkMode ? 'bg-[#101415]' : 'bg-white'}`}>
+    <div className={`min-h-[calc(100vh-64px)] md:min-h-[calc(100vh-72px)] py-6 md:py-12 relative overflow-hidden ${isDarkMode ? 'bg-[#101415]' : 'bg-white'}`}>
       {/* Animated Background Elements */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
         {[...Array(5)].map((_, i) => (
@@ -313,9 +627,9 @@ export function PlantRecognitionPage({ isDarkMode, language }: PlantRecognitionP
         ))}
       </div>
 
-      <div className="max-w-[1440px] mx-auto px-2 xs:px-4 sm480:px-6 sm576:px-8 md:px-8 lg:px-12 lg992:px-16 xl1200:px-24 relative z-10">
+      <div className="max-w-[1440px] mx-auto px-4 md:px-8 lg:px-[120px] relative z-10">
         <motion.div 
-          className="text-center mb-6 xs:mb-8 sm480:mb-10 md:mb-12"
+          className="text-center mb-8 md:mb-12"
           initial={{ opacity: 0, y: -20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6 }}
@@ -342,7 +656,7 @@ export function PlantRecognitionPage({ isDarkMode, language }: PlantRecognitionP
 
         <AnimatePresence mode="wait">
           {!plantInfo ? (
-            /* Upload Section */
+            
             <motion.div 
               className="max-w-2xl mx-auto"
               initial={{ opacity: 0, scale: 0.9 }}
@@ -351,7 +665,7 @@ export function PlantRecognitionPage({ isDarkMode, language }: PlantRecognitionP
               transition={{ duration: 0.5 }}
             >
               <motion.div
-                className={`relative rounded-[16px] p-4 xs:p-6 sm480:p-8 md:p-12 text-center border-2 border-dashed transition-all overflow-hidden ${
+                className={`relative rounded-[16px] p-12 text-center border-2 border-dashed transition-all overflow-hidden ${
                   isDarkMode 
                     ? 'bg-[#1A2324] border-[#2F3B3C] hover:border-[#00C57A]' 
                     : 'bg-white border-gray-300 hover:border-[#00C57A]'
@@ -362,7 +676,6 @@ export function PlantRecognitionPage({ isDarkMode, language }: PlantRecognitionP
                   boxShadow: '0 8px 40px rgba(0, 197, 122, 0.2)'
                 }}
               >
-                {/* Animated background glow */}
                 <motion.div
                   className="absolute inset-0 bg-gradient-to-br from-[#00C57A] to-transparent opacity-0"
                   whileHover={{ opacity: 0.05 }}
@@ -431,22 +744,23 @@ export function PlantRecognitionPage({ isDarkMode, language }: PlantRecognitionP
                           ease: "easeInOut"
                         }}
                       >
-                        <Camera className="mx-auto text-[#00C57A] mb-4 xs:mb-6" size={48} style={{ width: 'clamp(32px, 8vw, 64px)', height: 'clamp(32px, 8vw, 64px)' }} />
+                        <Camera className="mx-auto text-[#00C57A] mb-6" size={64} />
                       </motion.div>
-                      <h3 className={`${isDarkMode ? 'text-[#E1E1E1]' : 'text-[#101415]'} mb-3 xs:mb-4 text-base xs:text-lg sm480:text-xl`}>{t.uploadImage}</h3>
+                      <h3 className={isDarkMode ? 'text-[#E1E1E1] mb-4' : 'text-[#101415] mb-4'}>{t.uploadImage}</h3>
                       <p className={`opacity-70 mb-8 caption ${isDarkMode ? 'text-[#E1E1E1]' : 'text-[#101415]'}`}>
                         {t.plantRecognitionSubtitle}
                       </p>
                       
-                      <label className="inline-block">
+                      <label htmlFor="photoInput" className="inline-block">
                         <input
+                          id="photoInput"
                           type="file"
                           accept="image/*"
                           onChange={handleFileUpload}
                           className="hidden"
                         />
                         <motion.span 
-                          className="cursor-pointer inline-flex items-center gap-2 xs:gap-3 px-4 xs:px-6 sm480:px-8 py-3 xs:py-4 bg-[#00C57A] text-[#101415] rounded-[12px] hover:bg-[#7DF2C6] transition-all text-sm xs:text-base"
+                          className="cursor-pointer inline-flex items-center gap-3 px-8 py-4 bg-[#00C57A] text-[#101415] rounded-[12px] hover:bg-[#7DF2C6] transition-all"
                           whileHover={{ scale: 1.05, boxShadow: '0 10px 30px rgba(0, 197, 122, 0.3)' }}
                           whileTap={{ scale: 0.95 }}
                         >
@@ -470,18 +784,6 @@ export function PlantRecognitionPage({ isDarkMode, language }: PlantRecognitionP
                     </motion.div>
                   )}
                 </AnimatePresence>
-                
-                {/* Error Message */}
-                {error && (
-                  <motion.div
-                    className="mt-4 p-4 rounded-lg bg-red-500 bg-opacity-20 border border-red-500 text-red-500"
-                    initial={{ opacity: 0, y: -10 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0, y: -10 }}
-                  >
-                    <p className="text-sm">{error}</p>
-                  </motion.div>
-                )}
               </motion.div>
 
               {/* Telegram Bot Info Card */}
@@ -533,14 +835,38 @@ export function PlantRecognitionPage({ isDarkMode, language }: PlantRecognitionP
               </motion.a>
             </motion.div>
           ) : (
-            /* Result Section */
+            
             <motion.div 
-              className="grid grid-cols-1 sm576:grid-cols-2 gap-4 sm480:gap-6 md:gap-8"
+              className="grid md:grid-cols-2 gap-8"
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
               transition={{ duration: 0.5 }}
             >
+              <div>
+  {uploadedImage && (
+    <motion.div
+      initial={{ opacity: 0, scale: 0.8 }}
+      animate={{ opacity: 1, scale: 1 }}
+      transition={{ duration: 0.5 }}
+      className="relative"
+    >
+      <img
+        src={uploadedImage}
+        alt="Uploaded plant"
+        className="w-full max-h-[400px] object-contain rounded-[12px] mb-4 bg-black/10"
+      />
+      <motion.div
+        className="absolute top-4 right-4 bg-[#00C57A] rounded-full p-2"
+        initial={{ scale: 0, rotate: -180 }}
+        animate={{ scale: 1, rotate: 0 }}
+        transition={{ delay: 0.5, type: 'spring', stiffness: 200 }}
+      >
+        <CheckCircle className="text-[#101415]" size={24} />
+      </motion.div>
+    </motion.div>
+  )}
+</div>
               {/* Image Column */}
               <motion.div
                 initial={{ opacity: 0, x: -50 }}
@@ -548,32 +874,12 @@ export function PlantRecognitionPage({ isDarkMode, language }: PlantRecognitionP
                 transition={{ duration: 0.6, delay: 0.2 }}
               >
                 <motion.div
-                  className={`rounded-[16px] p-6 sticky top-24 ${isDarkMode ? 'bg-[#1A2324]' : 'bg-white border border-gray-200'}`}
+                  className={`rounded-[16px] p-6 ...
+ ${isDarkMode ? 'bg-[#1A2324]' : 'bg-white border border-gray-200'}`}
                   style={{ boxShadow: isDarkMode ? '0 4px 24px rgba(0,0,0,0.35)' : '0 4px 24px rgba(0,0,0,0.1)' }}
                   whileHover={{ y: -5, boxShadow: '0 8px 40px rgba(0, 197, 122, 0.2)' }}
                 >
-                  {uploadedImage && (
-                    <motion.div
-                      initial={{ opacity: 0, scale: 0.8 }}
-                      animate={{ opacity: 1, scale: 1 }}
-                      transition={{ duration: 0.5 }}
-                      className="relative"
-                    >
-                      <img
-                        src={uploadedImage}
-                        alt="Uploaded plant"
-                        className="w-full h-[200px] xs:h-[250px] sm480:h-[300px] sm576:h-[350px] md:h-[400px] object-cover rounded-[12px] mb-4"
-                      />
-                      <motion.div
-                        className="absolute top-4 right-4 bg-[#00C57A] rounded-full p-2"
-                        initial={{ scale: 0, rotate: -180 }}
-                        animate={{ scale: 1, rotate: 0 }}
-                        transition={{ delay: 0.5, type: 'spring', stiffness: 200 }}
-                      >
-                        <CheckCircle className="text-[#101415]" size={24} />
-                      </motion.div>
-                    </motion.div>
-                  )}
+                  
                   <motion.button
                     onClick={handleReset}
                     className={`w-full px-6 py-3 border-2 border-[#00C57A] text-[#00C57A] rounded-[12px] transition-all ${
@@ -821,13 +1127,11 @@ export function PlantRecognitionPage({ isDarkMode, language }: PlantRecognitionP
         </AnimatePresence>
       </div>
 
-      {/* Chatbot */}
+      {/* Chatbot (unchanged) */}
       <AnimatePresence>
         {isChatOpen && (
           <motion.div
-            className={`fixed bottom-20 xs:bottom-20 sm480:bottom-24 right-2 xs:right-2 sm480:right-4 md:right-8 w-[calc(100vw-1rem)] xs:w-[calc(100vw-2rem)] sm480:w-[340px] md:w-[380px] max-w-[380px] rounded-2xl shadow-2xl z-50 overflow-hidden ${
-              isDarkMode ? 'bg-[#1A2324] border border-[#2F3B3C]' : 'bg-white border border-gray-200'
-            }`}
+            className={`fixed bottom-24 right-4 md:right-8 w-[340px] md:w-[380px] rounded-2xl shadow-2xl z-50 overflow-hidden ${isDarkMode ? 'bg-[#1A2324] border border-[#2F3B3C]' : 'bg-white border border-gray-200'}`}
             initial={{ opacity: 0, y: 20, scale: 0.95 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: 20, scale: 0.95 }}
@@ -836,10 +1140,7 @@ export function PlantRecognitionPage({ isDarkMode, language }: PlantRecognitionP
             {/* Chat Header */}
             <div className="bg-[#00C57A] p-4 flex items-center justify-between">
               <div className="flex items-center gap-3">
-                <motion.div
-                  animate={{ rotate: [0, 10, -10, 0] }}
-                  transition={{ duration: 2, repeat: Infinity }}
-                >
+                <motion.div animate={{ rotate: [0, 10, -10, 0] }} transition={{ duration: 2, repeat: Infinity }}>
                   <Leaf className="text-[#101415]" size={24} />
                 </motion.div>
                 <div>
@@ -847,10 +1148,7 @@ export function PlantRecognitionPage({ isDarkMode, language }: PlantRecognitionP
                   <p className="text-[#101415] opacity-80" style={{ fontSize: '12px' }}>{t.online}</p>
                 </div>
               </div>
-              <button
-                onClick={() => setIsChatOpen(false)}
-                className="text-[#101415] hover:bg-[#101415] hover:bg-opacity-10 rounded-lg p-1 transition-all"
-              >
+              <button onClick={() => setIsChatOpen(false)} className="text-[#101415] hover:bg-[#101415] hover:bg-opacity-10 rounded-lg p-1 transition-all">
                 <X size={20} />
               </button>
             </div>
@@ -858,55 +1156,22 @@ export function PlantRecognitionPage({ isDarkMode, language }: PlantRecognitionP
             {/* Chat Messages */}
             <div className="h-[320px] overflow-y-auto p-4 space-y-3 scroll-smooth">
               {chatMessages.map((message, index) => (
-                <motion.div
-                  key={index}
-                  initial={{ opacity: 0, y: 10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: index * 0.1 }}
-                  className={`flex ${message.sender === 'user' ? 'justify-end' : 'justify-start'}`}
-                >
+                <motion.div key={index} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: index * 0.1 }} className={`flex ${message.sender === 'user' ? 'justify-end' : 'justify-start'}`}>
                   {message.image ? (
-                    <motion.div
-                      className="max-w-[70%] rounded-2xl overflow-hidden border-2 border-[#00C57A]"
-                      initial={{ scale: 0.8 }}
-                      animate={{ scale: 1 }}
-                      transition={{ type: 'spring', stiffness: 200 }}
-                    >
-                      <img 
-                        src={message.image} 
-                        alt="Uploaded plant" 
-                        className="w-full h-auto max-h-[200px] object-cover"
-                      />
+                    <motion.div className="max-w-[70%] rounded-2xl overflow-hidden border-2 border-[#00C57A]" initial={{ scale: 0.8 }} animate={{ scale: 1 }} transition={{ type: 'spring', stiffness: 200 }}>
+                      <img src={message.image} alt="Uploaded plant" className="w-full h-auto max-h-[200px] object-cover" />
                     </motion.div>
                   ) : (
-                    <div
-                      className={`max-w-[80%] px-4 py-2 rounded-2xl ${
-                        message.sender === 'user'
-                          ? 'bg-[#00C57A] text-[#101415]'
-                          : isDarkMode
-                          ? 'bg-[#2F3B3C] text-[#E1E1E1]'
-                          : 'bg-gray-100 text-[#101415]'
-                      }`}
-                      style={{ fontSize: '14px', whiteSpace: 'pre-line' }}
-                    >
+                    <div className={`max-w-[80%] px-4 py-2 rounded-2xl ${message.sender === 'user' ? 'bg-[#00C57A] text-[#101415]' : isDarkMode ? 'bg-[#2F3B3C] text-[#E1E1E1]' : 'bg-gray-100 text-[#101415]'}`} style={{ fontSize: '14px', whiteSpace: 'pre-line' }}>
                       {message.text}
                     </div>
                   )}
                 </motion.div>
               ))}
               {isUploading && (
-                <motion.div
-                  initial={{ opacity: 0, y: 10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  className="flex justify-start"
-                >
-                  <div className={`px-4 py-2 rounded-2xl flex items-center gap-2 ${
-                    isDarkMode ? 'bg-[#2F3B3C] text-[#E1E1E1]' : 'bg-gray-100 text-[#101415]'
-                  }`}>
-                    <motion.div
-                      animate={{ rotate: 360 }}
-                      transition={{ duration: 1, repeat: Infinity, ease: 'linear' }}
-                    >
+                <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="flex justify-start">
+                  <div className={`px-4 py-2 rounded-2xl flex items-center gap-2 ${isDarkMode ? 'bg-[#2F3B3C] text-[#E1E1E1]' : 'bg-gray-100 text-[#101415]'}`}>
+                    <motion.div animate={{ rotate: 360 }} transition={{ duration: 1, repeat: Infinity, ease: 'linear' }}>
                       <Loader2 size={16} className="text-[#00C57A]" />
                     </motion.div>
                     <span style={{ fontSize: '14px' }}>{t.analyzing}</span>
@@ -919,34 +1184,13 @@ export function PlantRecognitionPage({ isDarkMode, language }: PlantRecognitionP
             <div className={`p-4 ${isDarkMode ? 'border-t border-[#2F3B3C]' : 'border-t border-gray-200'}`}>
               <div className="flex items-center gap-2">
                 <label className="cursor-pointer">
-                  <input
-                    type="file"
-                    accept="image/*"
-                    onChange={handleChatFileUpload}
-                    className="hidden"
-                  />
-                  <div className={`p-2 rounded-lg transition-all ${
-                    isDarkMode ? 'bg-[#2F3B3C] hover:bg-[#3F4B4C]' : 'bg-gray-100 hover:bg-gray-200'
-                  }`}>
+                  <input type="file" accept="image/*" onChange={handleChatFileUpload} className="hidden" />
+                  <div className={`p-2 rounded-lg transition-all ${isDarkMode ? 'bg-[#2F3B3C] hover:bg-[#3F4B4C]' : 'bg-gray-100 hover:bg-gray-200'}`}>
                     <Paperclip className="text-[#00C57A]" size={18} />
                   </div>
                 </label>
-                <input
-                  type="text"
-                  value={userInput}
-                  onChange={(e) => setUserInput(e.target.value)}
-                  onKeyPress={handleKeyPress}
-                  placeholder={language === 'az' ? 'Mesaj yazın...' : language === 'en' ? 'Type a message...' : 'Введите сообщение...'}
-                  className={`flex-1 px-4 py-2 rounded-lg border-none outline-none ${
-                    isDarkMode ? 'bg-[#2F3B3C] text-[#E1E1E1] placeholder-gray-500' : 'bg-gray-100 text-[#101415] placeholder-gray-400'
-                  }`}
-                  style={{ fontSize: '14px' }}
-                />
-                <button
-                  onClick={handleSendMessage}
-                  disabled={!userInput.trim()}
-                  className="p-2 rounded-lg bg-[#00C57A] text-[#101415] disabled:opacity-50 disabled:cursor-not-allowed transition-all hover:bg-[#7DF2C6]"
-                >
+                <input type="text" value={userInput} onChange={(e) => setUserInput(e.target.value)} onKeyPress={handleKeyPress} placeholder={language === 'az' ? 'Mesaj yazın...' : language === 'en' ? 'Type a message...' : 'Введите сообщение...'} className={`flex-1 px-4 py-2 rounded-lg border-none outline-none ${isDarkMode ? 'bg-[#2F3B3C] text-[#E1E1E1] placeholder-gray-500' : 'bg-gray-100 text-[#101415] placeholder-gray-400'}`} style={{ fontSize: '14px' }} />
+                <button onClick={handleSendMessage} disabled={!userInput.trim()} className="p-2 rounded-lg bg-[#00C57A] text-[#101415] disabled:opacity-50 disabled:cursor-not-allowed transition-all hover:bg-[#7DF2C6]">
                   <Send size={18} />
                 </button>
               </div>
@@ -956,14 +1200,7 @@ export function PlantRecognitionPage({ isDarkMode, language }: PlantRecognitionP
       </AnimatePresence>
 
       {/* Chatbot Button */}
-      <motion.button
-        onClick={() => setIsChatOpen(true)}
-        className="fixed bottom-4 xs:bottom-4 sm480:bottom-8 right-2 xs:right-2 sm480:right-4 md:right-8 bg-[#00C57A] text-[#101415] p-3 xs:p-3 sm480:p-4 rounded-full shadow-2xl hover:bg-[#7DF2C6] transition-all z-40"
-        whileHover={{ scale: 1.1 }}
-        whileTap={{ scale: 0.9 }}
-        animate={{ y: [0, -8, 0] }}
-        transition={{ duration: 2, repeat: Infinity }}
-      >
+      <motion.button onClick={() => setIsChatOpen(true)} className="fixed bottom-8 right-4 md:right-8 bg-[#00C57A] text-[#101415] p-4 rounded-full shadow-2xl hover:bg-[#7DF2C6] transition-all z-40" whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.9 }} animate={{ y: [0, -8, 0] }} transition={{ duration: 2, repeat: Infinity }}>
         <MessageCircle size={28} />
       </motion.button>
     </div>
